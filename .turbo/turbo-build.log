@@ -1,12 +1,12 @@
 
-Debugger listening on ws://127.0.0.1:62579/6e8d7993-7d7d-4946-a669-ab2bb966f93d
+Debugger listening on ws://127.0.0.1:62821/1ca12630-8f79-4bf2-8adf-39253ba17cfb
 For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 
 > @elizaos/plugin-aithra-toolkit@1.0.0 build /Users/bucurdavid/dev/itheum/eliza/packages/plugin-aithra-toolkit
 > tsup --format esm --dts
 
-Debugger listening on ws://127.0.0.1:62584/f98b7a6e-ff51-49bf-8334-5da944a0e96c
+Debugger listening on ws://127.0.0.1:62834/059aa426-9874-4dca-8ed1-529cdb12accb
 For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 [34mCLI[39m Building entry: src/index.ts
@@ -18,9 +18,9 @@ Debugger attached.
 [34mESM[39m Build start
 [32mESM[39m [1mdist/index.js     [22m[32m4.33 KB[39m
 [32mESM[39m [1mdist/index.js.map [22m[32m9.85 KB[39m
-[32mESM[39m ⚡️ Build success in 6ms
+[32mESM[39m ⚡️ Build success in 15ms
 DTS Build start
-DTS ⚡️ Build success in 1291ms
+DTS ⚡️ Build success in 1874ms
 DTS dist/index.d.ts 1.92 KB
 Waiting for the debugger to disconnect...
 Waiting for the debugger to disconnect...
