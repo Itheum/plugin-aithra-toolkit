@@ -4,3 +4,4 @@ custom_actions/
 cache/
 .env
 .DS_Store
+.turbo
