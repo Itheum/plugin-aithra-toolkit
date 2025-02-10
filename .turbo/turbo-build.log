@@ -1,0 +1,26 @@
+
+Debugger listening on ws://127.0.0.1:62579/6e8d7993-7d7d-4946-a669-ab2bb966f93d
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+
+> @elizaos/plugin-aithra-toolkit@1.0.0 build /Users/bucurdavid/dev/itheum/eliza/packages/plugin-aithra-toolkit
+> tsup --format esm --dts
+
+Debugger listening on ws://127.0.0.1:62584/f98b7a6e-ff51-49bf-8334-5da944a0e96c
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+[34mCLI[39m Building entry: src/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.3.5
+[34mCLI[39m Using tsup config: /Users/bucurdavid/dev/itheum/eliza/packages/plugin-aithra-toolkit/tsup.config.ts
+[34mCLI[39m Target: esnext
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist/index.js     [22m[32m4.33 KB[39m
+[32mESM[39m [1mdist/index.js.map [22m[32m9.85 KB[39m
+[32mESM[39m ⚡️ Build success in 6ms
+DTS Build start
+DTS ⚡️ Build success in 1291ms
+DTS dist/index.d.ts 1.92 KB
+Waiting for the debugger to disconnect...
+Waiting for the debugger to disconnect...
