@@ -63,6 +63,51 @@ jobs:
             pnpm run build:stable
           fi
 
+      - name: Get current version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Calculate new version
+        id: new_version
+        run: |
+          CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Split version into parts
+            IFS='.' read -r -a version_parts <<< "$CURRENT_VERSION"
+            PATCH=$((version_parts[2] + 1))
+            NEW_VERSION="${version_parts[0]}.${version_parts[1]}.${PATCH}"
+            
+            if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+              NEW_VERSION="${NEW_VERSION}-alpha"
+            fi
+          else
+            NEW_VERSION="$CURRENT_VERSION"
+          fi
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Update package.json
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          # Use node to update package.json to preserve formatting
+          node -e "
+            const fs = require('fs');
+            const package = JSON.parse(fs.readFileSync('package.json'));
+            package.version = '$NEW_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(package, null, 2) + '\n');
+          "
+
+      - name: Commit version update
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add package.json
+          git commit -m "chore: update package.json version to ${{ steps.new_version.outputs.version }}"
+          git push
+
       - name: Get Package Version
         id: package_version
         run: |
