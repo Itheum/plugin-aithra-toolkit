@@ -1,4 +1,5 @@
 import { Plugin, Service, ServiceType, IAgentRuntime } from '@elizaos/core';
+import { BuildMusicNFTResult } from '@aithranetwork/sdk-aithra-toolkit';
 export * from '@aithranetwork/sdk-aithra-toolkit';
 
 declare const aithraToolkitPlugin: Plugin;
@@ -16,6 +17,7 @@ declare class AithraService extends Service {
     private writeTrackInfo;
     private createTempFolderStructure;
     static get serviceType(): ServiceType;
+    getTotalCost(numberOfSongs: number, numberOfMints: number): Promise<number>;
     initialize(runtime: IAgentRuntime, basePath?: string): Promise<void>;
     buildUploadMintMusicNFTs(params: {
         playlist: {
@@ -33,10 +35,8 @@ declare class AithraService extends Service {
         animation: {
             animationFile: string;
         };
-    }): Promise<{
-        success: boolean;
-        signatures: string[];
-    }>;
+        creator?: string;
+    }): Promise<BuildMusicNFTResult>;
     private storeBufferToFile;
     private saveTrackData;
     storeTrackToFolder(params: {
@@ -49,6 +49,7 @@ declare class AithraService extends Service {
                 category: string;
             };
             image: Buffer;
+            imageExtension?: string;
         };
     }): void;
     storeTracksToFolder(params: {

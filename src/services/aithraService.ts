@@ -4,7 +4,7 @@ import {
     ServiceType,
 } from "@elizaos/core";
 import { Connection, Keypair } from "@solana/web3.js";
-import { AithraManager, TrackInfo } from "@aithranetwork/sdk-aithra-toolkit";
+import { AithraManager, TrackInfo, BuildMusicNFTResult } from "@aithranetwork/sdk-aithra-toolkit";
 import bs58 from "bs58";
 import * as fs from "fs";
 import * as os from "os";
@@ -58,6 +58,17 @@ export class AithraService extends Service {
         return "aithra_toolkit" as ServiceType;
     }
 
+
+    async getTotalCost(numberOfSongs:number, numberOfMints:number): Promise<number> {
+        const response =  await this.manager.getTotalCost(numberOfSongs, numberOfMints);
+        
+       if (response.isOk()){
+              return response.unwrap();
+       }
+
+
+    }
+
     async initialize(runtime: IAgentRuntime, basePath?: string): Promise<void> {
         this.connection = new Connection(
             runtime.getSetting("SOLANA_RPC_URL") ||
@@ -107,7 +118,9 @@ export class AithraService extends Service {
         animation: {
             animationFile: string;
         };
-    }) {
+        creator?: string;
+    })
+    : Promise<BuildMusicNFTResult> {
         try {
             const result = await this.manager.buildUploadMintMusicNFTs({
                 folderPath: path.join(this.basePath, "assets"),
@@ -118,7 +131,10 @@ export class AithraService extends Service {
                 recursive: true,
                 force: true,
             });
-            return result;
+
+            if (result.isOk()){
+                return result.unwrap(); 
+            }
         } catch (error) {
             console.error("Failed to upload music NFTs:", error);
             throw error;
@@ -168,6 +184,7 @@ export class AithraService extends Service {
                 category: string;
             };
             image: Buffer;
+            imageExtension?: string;
         };
     }): void {
         this.items += 1;
@@ -181,7 +198,7 @@ export class AithraService extends Service {
             this.storeBufferToFile(
                 params.track.image,
                 "images",
-                `track${this.items}_cover.jpg`
+                `track${this.items}_cover.${params.track.imageExtension || 'jpg'}`
             );
         }
     }
