@@ -74,13 +74,15 @@ jobs:
         run: |
           CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Strip any existing alpha suffix
+            BASE_VERSION=${CURRENT_VERSION%-alpha*}
             # Split version into parts
-            IFS='.' read -r -a version_parts <<< "$CURRENT_VERSION"
+            IFS='.' read -r -a version_parts <<< "$BASE_VERSION"
             PATCH=$((version_parts[2] + 1))
             NEW_VERSION="${version_parts[0]}.${version_parts[1]}.${PATCH}"
             
             if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
-              NEW_VERSION="${NEW_VERSION}-alpha"
+              NEW_VERSION="${NEW_VERSION}-alpha.1"
             fi
           else
             NEW_VERSION="$CURRENT_VERSION"
