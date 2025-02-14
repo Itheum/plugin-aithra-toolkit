@@ -99,15 +99,6 @@ jobs:
             fs.writeFileSync('package.json', JSON.stringify(package, null, 2) + '\n');
           "
 
-      - name: Commit version update
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add package.json
-          git commit -m "chore: update package.json version to ${{ steps.new_version.outputs.version }}"
-          git push
-
       - name: Get Package Version
         id: package_version
         run: |
@@ -125,6 +116,24 @@ jobs:
             fi
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Update package.json with version
+        run: |
+          # Use node to update package.json to preserve formatting
+          node -e "
+            const fs = require('fs');
+            const package = JSON.parse(fs.readFileSync('package.json'));
+            package.version = '${{ steps.package_version.outputs.version }}';
+            fs.writeFileSync('package.json', JSON.stringify(package, null, 2) + '\n');
+          "
+
+      - name: Commit version update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add package.json
+          git commit -m "chore: update package.json version to ${{ steps.package_version.outputs.version }}"
+          git push
 
       - name: Create Release
         env:
