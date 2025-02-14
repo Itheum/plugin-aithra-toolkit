@@ -113,7 +113,16 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
-            VERSION="${VERSION}-alpha.$(date +%s)"
+            # Extract existing alpha number if it exists
+            if [[ $VERSION =~ -alpha\.([0-9]+)$ ]]; then
+              ALPHA_NUM=${BASH_REMATCH[1]}
+              NEW_ALPHA_NUM=$((ALPHA_NUM + 1))
+              # Remove existing alpha suffix and add new one
+              VERSION="${VERSION%-alpha.*}-alpha.$NEW_ALPHA_NUM"
+            else
+              # No existing alpha number, start with 1
+              VERSION="${VERSION}-alpha.1"
+            fi
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
