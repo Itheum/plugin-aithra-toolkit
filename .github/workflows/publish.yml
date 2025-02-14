@@ -63,14 +63,10 @@ jobs:
             pnpm run build:stable
           fi
 
-      - name: Get Next Version
-        id: semantic
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get Package Version
+        id: package_version
         run: |
-          pnpm add -D semantic-release @semantic-release/git @semantic-release/changelog @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/npm
-          OUTPUT=$(unset GITHUB_ACTIONS && npx semantic-release --dry-run --no-ci)
-          VERSION=$(echo "$OUTPUT" | grep -o "The next release version is [0-9]*\.[0-9]*\.[0-9]*" | awk '{print $6}')
+          VERSION=$(node -p "require('./package.json').version")
           if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
             VERSION="${VERSION}-alpha.$(date +%s)"
           fi
@@ -78,7 +74,17 @@ jobs:
 
       - name: Update Version
         run: |
-          npm version ${{ steps.semantic.outputs.version }} --no-git-tag-version
+          npm version ${{ steps.package_version.outputs.version }} --no-git-tag-version
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_TAG="v${{ steps.package_version.outputs.version }}"
+          gh release create $RELEASE_TAG \
+            --target=$GITHUB_SHA \
+            --title="$RELEASE_TAG" \
+            --generate-notes
 
       - name: Publish
         env:
@@ -89,11 +95,3 @@ jobs:
           else
             pnpm publish --access=public --no-git-checks
           fi
-
-      - name: Create Git Tag
-        if: success()
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git tag -a "v${{ steps.semantic.outputs.version }}" -m "Release v${{ steps.semantic.outputs.version }}"
-          git push origin "v${{ steps.semantic.outputs.version }}"
