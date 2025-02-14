@@ -72,10 +72,6 @@ jobs:
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Update Version
-        run: |
-          npm version ${{ steps.package_version.outputs.version }} --no-git-tag-version
-
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
