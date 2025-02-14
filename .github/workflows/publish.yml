@@ -19,7 +19,7 @@ permissions:
   contents: write
 
 jobs:
-  publish-npm:
+  version-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,8 +28,8 @@ jobs:
       
       - uses: actions/setup-node@v4
         with:
-          node-version: '23.3.x'
-          registry-url: https://registry.npmjs.org/
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org/'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -63,18 +63,37 @@ jobs:
             pnpm run build:stable
           fi
 
-      - name: Setup Semantic Release
-        run: |
-          pnpm add -D semantic-release @semantic-release/git @semantic-release/github conventional-changelog-conventionalcommits
-
-      - name: Semantic Release
+      - name: Get Next Version
+        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          RELEASE_TYPE="${{ steps.release_type.outputs.type }}"
-          if [[ "$RELEASE_TYPE" == "alpha" ]]; then
-            npx semantic-release --branches develop --preset conventionalcommits --prerelease alpha
-          else
-            npx semantic-release --branches main --preset conventionalcommits
+          pnpm add -D semantic-release
+          OUTPUT=$(unset GITHUB_ACTIONS && npx semantic-release --dry-run --no-ci)
+          VERSION=$(echo "$OUTPUT" | grep -o "The next release version is [0-9]*\.[0-9]*\.[0-9]*" | awk '{print $6}')
+          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+            VERSION="${VERSION}-alpha.$(date +%s)"
           fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Update Version
+        run: |
+          npm version ${{ steps.semantic.outputs.version }} --no-git-tag-version
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+            pnpm publish --access=public --tag alpha --no-git-checks
+          else
+            pnpm publish --access=public --no-git-checks
+          fi
+
+      - name: Create Git Tag
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag -a "v${{ steps.semantic.outputs.version }}" -m "Release v${{ steps.semantic.outputs.version }}"
+          git push origin "v${{ steps.semantic.outputs.version }}"
