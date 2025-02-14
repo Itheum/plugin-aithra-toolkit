@@ -1,13 +1,13 @@
 # Aithra Music Playlist cNFT Minter
 
 <div align="center">
-  <img src="assets/banner.png" alt="Plugin Banner" width="100%">
+  <img src="https://raw.githubusercontent.com/Itheum/plugin-aithra-toolkit/main/assets/banner.png" alt="Plugin Banner" width="100%">
 </div>
 
 ## Screenshots
 
 <div align="center">
-  <img src="assets/screenshots/screenshot1.png" alt="Feature Demo" width="80%">
+  <img src="https://raw.githubusercontent.com/Itheum/plugin-aithra-toolkit/main/assets/screenshots/screenshot1.png" alt="Feature Demo" width="80%">
 </div>
 
 
