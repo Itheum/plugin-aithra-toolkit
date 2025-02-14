@@ -3,10 +3,20 @@ on:
   push:
     branches:
       - main
+      - develop
   workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (stable/alpha)'
+        required: true
+        default: 'stable'
+        type: choice
+        options:
+          - stable
+          - alpha
 
 permissions:
-  contents: write # needed for creating releases
+  contents: write
 
 jobs:
   publish-npm:
@@ -17,18 +27,62 @@ jobs:
         with:
           node-version: '20.3.x'
           registry-url: https://registry.npmjs.org/
-      
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Set Release Type
+        id: release_type
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "type=alpha" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "type=stable" >> $GITHUB_OUTPUT
+          else
+            echo "type=${{ inputs.release_type }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install Dependencies
+        run: |
+          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+            pnpm run preinstall:develop && pnpm install
+          else
+            pnpm run preinstall:stable && pnpm install
+          fi
+
+      - name: Build
+        run: |
+          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+            pnpm run build:develop
+          else
+            pnpm run build:stable
+          fi
+
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=v$(node -p "require('./package.json').version")
+          RELEASE_TYPE="${{ steps.release_type.outputs.type }}"
+          
+          if [[ "$RELEASE_TYPE" == "alpha" ]]; then
+            VERSION="${VERSION}-alpha"
+          fi
+          
           echo "Creating release for $VERSION"
           gh release create $VERSION \
             --title "$VERSION" \
-            --generate-notes
+            --generate-notes \
+            --prerelease $([[ "$RELEASE_TYPE" == "alpha" ]] && echo "true" || echo "false")
 
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access=public
+        run: |
+          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+            pnpm publish --access=public --tag alpha
+          else
+            pnpm publish --access=public
+          fi
