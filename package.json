@@ -1,6 +1,6 @@
 {
   "name": "@aithranetwork/plugin-aithra-toolkit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -17,6 +17,7 @@
   },
   "files": [
     "dist",
+    "assets",
     "README.md",
     "package.json"
   ],
