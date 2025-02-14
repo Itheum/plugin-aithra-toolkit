@@ -1,5 +1,5 @@
 {
-  "name": "@elizaos/plugin-aithra-toolkit",
+  "name": "@aithranetwork/plugin-aithra-toolkit",
   "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
