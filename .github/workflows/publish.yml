@@ -1,37 +1,21 @@
-name: Publish
-
+name: Publish to NPM
 on:
   push:
     branches:
       - main
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '23.3.0'
+          node-version: '20.3.x'
           registry-url: https://registry.npmjs.org/
       
-      # Install dependencies with pnpm
-      - uses: pnpm/action-setup@v2
-        with:
-          version: latest
-    
-      - name: Create release
+      - name: Publish
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          RELEASE_TAG=v$(node -p "require('./package.json').version")
-          gh release create $RELEASE_TAG --target=$GITHUB_SHA --title="$RELEASE_TAG" --generate-notes
-      
-      - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-        run: pnpm publish --access=public --no-git-checks
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access=public
