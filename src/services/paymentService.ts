@@ -148,7 +148,7 @@ export class PaymentsService {
         // First try SOL transfer
         const solResult = await this.getSolTransferDetails(paymentHash);
     
-        if (solResult.isOk) {
+        if (solResult.isOk()) {
             const { receiver, sender, amount } = solResult.unwrap();
     
             if (sender !== walletAddress || receiver !== this.walletPublicKey) {
@@ -185,7 +185,7 @@ export class PaymentsService {
         // If not SOL transfer, try SPL token transfer
         const splResult = await this.getSplTransferDetails(paymentHash);
     
-        if (splResult.isOk) {
+        if (splResult.isOk()) {
             const { receiver, sender, amount } = splResult.unwrap();
     
             const sourceAta = getAssociatedTokenAddressSync(this.AITHRA_MINT, new PublicKey(walletAddress), true);

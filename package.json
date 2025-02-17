@@ -1,6 +1,6 @@
 {
   "name": "@aithranetwork/plugin-aithra-toolkit",
-  "version": "0.0.5-alpha.2",
+  "version": "0.0.6-alpha.1",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,7 +23,7 @@
   ],
   "dependencies": {
     "@aithranetwork/sdk-aithra-toolkit": "0.0.7-alpha.1",
-    "@elizaos/core": "0.25.6-alpha.1",
+    "@elizaos/core": "workspace:*",
     "@solana/spl-token": "^0.4.12",
     "@solana/web3.js": "1.95.8",
     "bs58": "^6.0.0",
@@ -37,6 +37,7 @@
     "tsup": "8.3.5"
   },
   "scripts": {
+    "build":"tsup --format esm --dts",
     "preinstall:stable": "node -e \"const p=require('./package.json');require('child_process').exec('npm view @elizaos/core versions --json',(e,o)=>{const v=JSON.parse(o).filter(v=>!v.includes('alpha')&&!v.includes('beta')).pop();p.dependencies['@elizaos/core']=v;require('fs').writeFileSync('./package.json',JSON.stringify(p,null,2))});\"",
     "preinstall:develop": "node -e \"const p=require('./package.json');require('child_process').exec('npm view @elizaos/core versions --json',(e,o)=>{const v=JSON.parse(o).pop();p.dependencies['@elizaos/core']=v;require('fs').writeFileSync('./package.json',JSON.stringify(p,null,2))});\"",
     "build:stable": "tsup --format esm --dts",

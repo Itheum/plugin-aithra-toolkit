@@ -144,22 +144,20 @@ export async function generateAudio({
         };
           
         const response = await replicate.run("minimax/music-01", { input });
-        
-     
-        if (response instanceof ReadableStream) {
-            const reader = response.getReader();
-            const chunks: Uint8Array[] = [];
-        
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                chunks.push(value);
+
+        if (typeof response.toString() === "string") {
+            try {
+                const audioResponse = await fetch(response.toString());
+                const arrayBuffer = await audioResponse.arrayBuffer();
+                return Result.ok(Buffer.from(arrayBuffer));
+            } catch (error) {
+                return Result.err(
+                    new Error(
+                        `Failed to fetch audio from URL: ${error.message}`
+                    )
+                );
             }
-        
-            const audioBuffer = Buffer.concat(chunks.map(chunk => Buffer.from(chunk)));
-            return Result.ok(audioBuffer);
         }
-    
 
         return Result.err(new Error('Invalid response format from Replicate API'));
     } catch (error) {
