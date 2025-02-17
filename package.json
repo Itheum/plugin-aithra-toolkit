@@ -22,16 +22,17 @@
     "package.json"
   ],
   "dependencies": {
-    "@aithranetwork/sdk-aithra-toolkit": "0.0.6",
+    "@aithranetwork/sdk-aithra-toolkit": "0.0.7-alpha.1",
     "@elizaos/core": "0.25.6-alpha.1",
     "@solana/spl-token": "^0.4.12",
     "@solana/web3.js": "1.95.8",
     "bs58": "^6.0.0",
-    "reflect-metadata": "^0.2.2",
+    "reflect-metadata": "0.2.2",
     "replicate": "^1.0.1",
     "zod": "^3.0.0"
   },
   "devDependencies": {
+    "@swc/core": "^1.10.16",
     "@types/node": "^20.0.0",
     "tsup": "8.3.5"
   },
