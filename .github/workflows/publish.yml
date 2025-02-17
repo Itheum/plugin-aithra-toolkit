@@ -1,158 +1,158 @@
-name: Publish to NPM
-on:
-  push:
-    branches:
-      - main
-      - develop
-  workflow_dispatch:
-    inputs:
-      release_type:
-        description: 'Release type (stable/alpha)'
-        required: true
-        default: 'stable'
-        type: choice
-        options:
-          - stable
-          - alpha
+# name: Publish to NPM
+# on:
+#   push:
+#     branches:
+#       - main
+#       - develop
+#   workflow_dispatch:
+#     inputs:
+#       release_type:
+#         description: 'Release type (stable/alpha)'
+#         required: true
+#         default: 'stable'
+#         type: choice
+#         options:
+#           - stable
+#           - alpha
 
-permissions:
-  contents: write
+# permissions:
+#   contents: write
 
-jobs:
-  version-and-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+# jobs:
+#   version-and-publish:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
       
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org/'
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: '20.x'
+#           registry-url: 'https://registry.npmjs.org/'
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+#       - name: Install pnpm
+#         uses: pnpm/action-setup@v2
+#         with:
+#           version: 8
 
-      - name: Set Release Type
-        id: release_type
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "type=alpha" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "type=stable" >> $GITHUB_OUTPUT
-          else
-            echo "type=${{ inputs.release_type }}" >> $GITHUB_OUTPUT
-          fi
+#       - name: Set Release Type
+#         id: release_type
+#         run: |
+#           if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+#             echo "type=alpha" >> $GITHUB_OUTPUT
+#           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+#             echo "type=stable" >> $GITHUB_OUTPUT
+#           else
+#             echo "type=${{ inputs.release_type }}" >> $GITHUB_OUTPUT
+#           fi
 
-      - name: Install Dependencies
-        run: |
-          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
-            pnpm run preinstall:develop && pnpm install
-          else
-            pnpm run preinstall:stable && pnpm install
-          fi
+#       - name: Install Dependencies
+#         run: |
+#           if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+#             pnpm run preinstall:develop && pnpm install
+#           else
+#             pnpm run preinstall:stable && pnpm install
+#           fi
 
-      - name: Build
-        run: |
-          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
-            pnpm run build:develop
-          else
-            pnpm run build:stable
-          fi
+#       - name: Build
+#         run: |
+#           if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+#             pnpm run build:develop
+#           else
+#             pnpm run build:stable
+#           fi
 
-      - name: Get current version
-        id: current_version
-        run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+#       - name: Get current version
+#         id: current_version
+#         run: |
+#           CURRENT_VERSION=$(node -p "require('./package.json').version")
+#           echo "version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Calculate new version
-        id: new_version
-        run: |
-          CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            # Strip any existing alpha suffix
-            BASE_VERSION=${CURRENT_VERSION%-alpha*}
-            # Split version into parts
-            IFS='.' read -r -a version_parts <<< "$BASE_VERSION"
-            PATCH=$((version_parts[2] + 1))
-            NEW_VERSION="${version_parts[0]}.${version_parts[1]}.${PATCH}"
+#       - name: Calculate new version
+#         id: new_version
+#         run: |
+#           CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+#           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+#             # Strip any existing alpha suffix
+#             BASE_VERSION=${CURRENT_VERSION%-alpha*}
+#             # Split version into parts
+#             IFS='.' read -r -a version_parts <<< "$BASE_VERSION"
+#             PATCH=$((version_parts[2] + 1))
+#             NEW_VERSION="${version_parts[0]}.${version_parts[1]}.${PATCH}"
             
-            if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
-              NEW_VERSION="${NEW_VERSION}-alpha.1"
-            fi
-          else
-            NEW_VERSION="$CURRENT_VERSION"
-          fi
-          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+#             if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+#               NEW_VERSION="${NEW_VERSION}-alpha.1"
+#             fi
+#           else
+#             NEW_VERSION="$CURRENT_VERSION"
+#           fi
+#           echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Update package.json
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          NEW_VERSION="${{ steps.new_version.outputs.version }}"
-          # Use node to update package.json to preserve formatting
-          node -e "
-            const fs = require('fs');
-            const package = JSON.parse(fs.readFileSync('package.json'));
-            package.version = '$NEW_VERSION';
-            fs.writeFileSync('package.json', JSON.stringify(package, null, 2) + '\n');
-          "
+#       - name: Update package.json
+#         if: github.event_name == 'workflow_dispatch'
+#         run: |
+#           NEW_VERSION="${{ steps.new_version.outputs.version }}"
+#           # Use node to update package.json to preserve formatting
+#           node -e "
+#             const fs = require('fs');
+#             const package = JSON.parse(fs.readFileSync('package.json'));
+#             package.version = '$NEW_VERSION';
+#             fs.writeFileSync('package.json', JSON.stringify(package, null, 2) + '\n');
+#           "
 
-      - name: Get Package Version
-        id: package_version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
-            # Extract existing alpha number if it exists
-            if [[ $VERSION =~ -alpha\.([0-9]+)$ ]]; then
-              ALPHA_NUM=${BASH_REMATCH[1]}
-              NEW_ALPHA_NUM=$((ALPHA_NUM + 1))
-              # Remove existing alpha suffix and add new one
-              VERSION="${VERSION%-alpha.*}-alpha.$NEW_ALPHA_NUM"
-            else
-              # No existing alpha number, start with 1
-              VERSION="${VERSION}-alpha.1"
-            fi
-          fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+#       - name: Get Package Version
+#         id: package_version
+#         run: |
+#           VERSION=$(node -p "require('./package.json').version")
+#           if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+#             # Extract existing alpha number if it exists
+#             if [[ $VERSION =~ -alpha\.([0-9]+)$ ]]; then
+#               ALPHA_NUM=${BASH_REMATCH[1]}
+#               NEW_ALPHA_NUM=$((ALPHA_NUM + 1))
+#               # Remove existing alpha suffix and add new one
+#               VERSION="${VERSION%-alpha.*}-alpha.$NEW_ALPHA_NUM"
+#             else
+#               # No existing alpha number, start with 1
+#               VERSION="${VERSION}-alpha.1"
+#             fi
+#           fi
+#           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Update package.json with version
-        run: |
-          # Use node to update package.json to preserve formatting
-          node -e "
-            const fs = require('fs');
-            const package = JSON.parse(fs.readFileSync('package.json'));
-            package.version = '${{ steps.package_version.outputs.version }}';
-            fs.writeFileSync('package.json', JSON.stringify(package, null, 2) + '\n');
-          "
+#       - name: Update package.json with version
+#         run: |
+#           # Use node to update package.json to preserve formatting
+#           node -e "
+#             const fs = require('fs');
+#             const package = JSON.parse(fs.readFileSync('package.json'));
+#             package.version = '${{ steps.package_version.outputs.version }}';
+#             fs.writeFileSync('package.json', JSON.stringify(package, null, 2) + '\n');
+#           "
 
-      - name: Commit version update
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add package.json
-          git commit -m "chore: update package.json version to ${{ steps.package_version.outputs.version }}"
-          git push
+#       - name: Commit version update
+#         run: |
+#           git config user.name 'github-actions[bot]'
+#           git config user.email 'github-actions[bot]@users.noreply.github.com'
+#           git add package.json
+#           git commit -m "chore: update package.json version to ${{ steps.package_version.outputs.version }}"
+#           git push
 
-      - name: Create Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          RELEASE_TAG="v${{ steps.package_version.outputs.version }}"
-          gh release create $RELEASE_TAG \
-            --target=$GITHUB_SHA \
-            --title="$RELEASE_TAG" \
-            --generate-notes
+#       - name: Create Release
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           RELEASE_TAG="v${{ steps.package_version.outputs.version }}"
+#           gh release create $RELEASE_TAG \
+#             --target=$GITHUB_SHA \
+#             --title="$RELEASE_TAG" \
+#             --generate-notes
 
-      - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
-            pnpm publish --access=public --tag alpha --no-git-checks
-          else
-            pnpm publish --access=public --no-git-checks
-          fi
+#       - name: Publish
+#         env:
+#           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+#         run: |
+#           if [[ "${{ steps.release_type.outputs.type }}" == "alpha" ]]; then
+#             pnpm publish --access=public --tag alpha --no-git-checks
+#           else
+#             pnpm publish --access=public --no-git-checks
+#           fi
