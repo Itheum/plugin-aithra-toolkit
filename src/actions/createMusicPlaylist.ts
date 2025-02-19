@@ -250,8 +250,11 @@ export default {
                 },
                 creator: payload.walletAddress
             })
-    
 
+            // mintResponse.success
+            // mintResponse.animationUrl
+            // mintResponse.assetIds
+            // mintResponse.trackUrl
 
             if (mintResponse.success){
                 if(callback){

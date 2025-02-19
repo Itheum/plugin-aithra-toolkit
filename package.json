@@ -1,6 +1,6 @@
 {
   "name": "@aithranetwork/plugin-aithra-toolkit",
-  "version": "0.0.6-alpha.2",
+  "version": "0.0.6-alpha.3",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -22,7 +22,7 @@
     "package.json"
   ],
   "dependencies": {
-    "@aithranetwork/sdk-aithra-toolkit": "0.0.7-alpha.1",
+    "@aithranetwork/sdk-aithra-toolkit": "0.0.7-alpha.2",
     "@elizaos/core": "0.25.6-alpha.1",
     "@solana/spl-token": "^0.4.12",
     "@solana/web3.js": "1.95.8",
